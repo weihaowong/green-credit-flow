@@ -14,36 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      users: {
-        Row: {
-          base_score: number
-          created_at: string
-          eco_score: number
-          eco_score_month: number
-          email: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          base_score?: number
-          created_at?: string
-          eco_score?: number
-          eco_score_month?: number
-          email: string
-          id: string
-          updated_at?: string
-        }
-        Update: {
-          base_score?: number
-          created_at?: string
-          eco_score?: number
-          eco_score_month?: number
-          email?: string
-          id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
