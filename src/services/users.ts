@@ -194,7 +194,14 @@ export class UserService {
           eco_score_delta,
           merchant:merchants(green_score, category)
         `)
-        .eq("user_id", userId);
+        .eq("user_id", userId) as { 
+          data: Array<{
+            amount: number;
+            eco_score_delta: number;
+            merchant: { green_score: number; category: string } | null;
+          }> | null;
+          error: any;
+        };
 
       if (transactionsError) {
         return { breakdown: null, error: transactionsError.message };
@@ -211,12 +218,12 @@ export class UserService {
           ? transactions.reduce((sum, t) => sum + t.eco_score_delta, 0) / transactions.length 
           : 0,
         categoryBreakdown: transactions.reduce((acc, t) => {
-          const category = t.merchant?.category || 'Unknown';
+          const category = Array.isArray(t.merchant) ? t.merchant[0]?.category : t.merchant?.category || 'Unknown';
           acc[category] = (acc[category] || 0) + 1;
           return acc;
         }, {} as Record<string, number>),
         greenScoreDistribution: transactions.reduce((acc, t) => {
-          const score = t.merchant?.green_score || 0;
+          const score = Array.isArray(t.merchant) ? t.merchant[0]?.green_score : t.merchant?.green_score || 0;
           const range = score >= 80 ? 'Excellent (80-100)' :
                        score >= 60 ? 'Good (60-79)' :
                        score >= 40 ? 'Fair (40-59)' : 'Poor (0-39)';
@@ -245,7 +252,12 @@ export class UserService {
           merchant:merchants(green_score, category)
         `)
         .eq("user_id", userId)
-        .limit(10);
+        .limit(10) as { 
+          data: Array<{
+            merchant: { green_score: number; category: string } | null;
+          }> | null;
+          error: any;
+        };
 
       const recommendations: string[] = [];
 
@@ -257,7 +269,10 @@ export class UserService {
         recommendations.push("Try uploading more transaction history to see your EcoScore potential");
       }
 
-      const lowGreenScoreTransactions = transactions?.filter(t => (t.merchant?.green_score || 0) < 50) || [];
+      const lowGreenScoreTransactions = transactions?.filter(t => {
+        const score = Array.isArray(t.merchant) ? t.merchant[0]?.green_score : t.merchant?.green_score;
+        return (score || 0) < 50;
+      }) || [];
       if (lowGreenScoreTransactions.length > 0) {
         recommendations.push("Some of your recent purchases were from low-green-score merchants. Consider alternatives for better EcoScore gains.");
       }

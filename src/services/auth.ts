@@ -124,7 +124,7 @@ export class AuthService {
     }
   }
 
-  static async onAuthStateChange(callback: (user: AuthUser | null) => void) {
+  static onAuthStateChange(callback: (user: AuthUser | null) => void) {
     return supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
         const { data: userProfile } = await supabase
