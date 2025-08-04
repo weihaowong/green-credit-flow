@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Activity, TrendingUp, TrendingDown, Leaf, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Activity, TrendingUp, TrendingDown, Leaf, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -16,13 +16,11 @@ interface Transaction {
 
 interface TransactionFeedProps {
   transactions: Transaction[];
-  loading?: boolean;
 }
 
-const TransactionFeed = ({ transactions, loading = false }: TransactionFeedProps) => {
+const TransactionFeed = ({ transactions }: TransactionFeedProps) => {
   const [showAll, setShowAll] = useState(false);
   const displayedTransactions = showAll ? transactions : transactions.slice(0, 5);
-  
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('ms-MY', {
       style: 'currency',
@@ -49,38 +47,12 @@ const TransactionFeed = ({ transactions, loading = false }: TransactionFeedProps
     return "text-destructive";
   };
 
-  if (loading) {
-    return (
-      <Card className="shadow-card">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            Recent Transactions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-muted-foreground" />
-              <p className="text-muted-foreground">Loading transactions...</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="shadow-card">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2">
           <Activity className="h-5 w-5 text-primary" />
           Recent Transactions
-          {transactions.length > 0 && (
-            <Badge variant="secondary" className="ml-2">
-              {transactions.length}
-            </Badge>
-          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -131,7 +103,7 @@ const TransactionFeed = ({ transactions, loading = false }: TransactionFeedProps
                       <TrendingDown className="h-3 w-3" />
                     ) : null}
                     <span className={getScoreColor(transaction.ecoScoreDelta)}>
-                      {transaction.ecoScoreDelta > 0 ? '+' : ''}{transaction.ecoScoreDelta.toFixed(1)}
+                      {transaction.ecoScoreDelta > 0 ? '+' : ''}{transaction.ecoScoreDelta}
                     </span>
                   </Badge>
                   
