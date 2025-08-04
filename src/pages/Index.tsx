@@ -7,7 +7,6 @@ import CSVUpload from "@/components/CSVUpload";
 import MerchantsList from "@/components/MerchantsList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Badge } from "@/components/ui/badge";
 import { 
   Users, 
@@ -16,117 +15,155 @@ import {
   Calendar,
   ArrowRight
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserScore } from "@/hooks/useUserScore";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useMerchants } from "@/hooks/useMerchants";
+import { useBankConnection } from "@/hooks/useBankConnection";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  // Sample data - in real app this would come from API/database
-  const [userScore, setUserScore] = useState({
-    baseScore: 650,
-    ecoScore: 18,
-    combinedScore: 668,
-    scoreMonth: 8 // August
-  });
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { score, loading: scoreLoading } = useUserScore(user?.id || null);
+  const { transactions, uploadTransactions, loading: transactionsLoading } = useTransactions(user?.id || null);
+  const { merchants, loading: merchantsLoading } = useMerchants();
+  const { connection, connectBank, isConnected, loading: bankLoading } = useBankConnection(user?.id || null);
+  const { toast } = useToast();
 
-  const [isConnected, setIsConnected] = useState(false);
-  const [transactions, setTransactions] = useState([
-    {
-      id: "1",
-      date: new Date("2025-08-03"),
-      merchant: "Green Earth Grocery",
-      amount: 125.50,
-      greenScore: 85,
-      ecoScoreDelta: 2.1,
-      category: "Groceries"
-    },
-    {
-      id: "2", 
-      date: new Date("2025-08-02"),
-      merchant: "Solar Solutions Sdn Bhd",
-      amount: 2500.00,
-      greenScore: 95,
-      ecoScoreDelta: 15.8,
-      category: "Home & Garden"
-    },
-    {
-      id: "3",
-      date: new Date("2025-08-01"),
-      merchant: "Fast Fashion Store",
-      amount: 89.90,
-      greenScore: 25,
-      ecoScoreDelta: -0.6,
-      category: "Clothing"
-    }
-  ]);
-
-  const [merchants] = useState([
-    {
-      id: "1",
-      name: "Solar Solutions Sdn Bhd",
-      greenScore: 95,
-      category: "Renewable Energy"
-    },
-    {
-      id: "2", 
-      name: "Green Earth Grocery",
-      greenScore: 85,
-      category: "Organic Food"
-    },
-    {
-      id: "3",
-      name: "EcoTransport Malaysia",
-      greenScore: 82,
-      category: "Transportation"
-    },
-    {
-      id: "4",
-      name: "Sustainable Living Store",
-      greenScore: 78,
-      category: "Home & Garden"
-    },
-    {
-      id: "5",
-      name: "Local Fresh Market",
-      greenScore: 72,
-      category: "Groceries"
-    },
-    {
-      id: "6",
-      name: "Regular Supermarket",
-      greenScore: 45,
-      category: "Groceries"
-    },
-    {
-      id: "7",
-      name: "Fast Fashion Store",
-      greenScore: 25,
-      category: "Clothing"
-    }
-  ]);
-
-  const handleTransactionUpload = (data: any[]) => {
-    // Process uploaded transactions
-    const newTransactions = data.map((item, index) => ({
-      id: `upload-${index}`,
+  const handleTransactionUpload = async (data: any[]) => {
+    const csvTransactions = data.map((item) => ({
       date: item.date,
-      merchant: item.merchant,
       amount: item.amount,
-      greenScore: Math.floor(Math.random() * 100), // Would be looked up from merchant DB
-      ecoScoreDelta: Math.floor(Math.random() * 10) - 2,
-      category: item.category
+      merchant: item.merchant,
+      category: item.category,
     }));
+
+    const result = await uploadTransactions(csvTransactions);
     
-    setTransactions([...newTransactions, ...transactions]);
+    if (result.success) {
+      toast({
+        title: "Transactions uploaded successfully!",
+        description: `${data.length} transactions have been processed and your EcoScore has been updated.`,
+      });
+    } else {
+      toast({
+        title: "Upload failed",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleMerchantUpload = (data: any[]) => {
-    // Handle merchant green score uploads
-    console.log("Merchant data uploaded:", data);
+  const handleMerchantUpload = async (data: any[]) => {
+    const csvMerchants = data.map((item) => ({
+      name: item.name,
+      green_score: parseInt(item.green_score),
+      category: item.category,
+    }));
+
+    // This would typically be an admin function
+    toast({
+      title: "Merchant upload",
+      description: "Merchant data upload is an admin function. Contact support for assistance.",
+    });
   };
 
+  const handleBankConnect = async () => {
+    const result = await connectBank("GLC Bank");
+    
+    if (result.success) {
+      toast({
+        title: "Bank connected successfully!",
+        description: "Your GLC Bank account has been linked. Transactions are being imported.",
+      });
+    } else {
+      toast({
+        title: "Connection failed",
+        description: result.error || "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Show loading state while authentication is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading EcoScore Wallet...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show welcome screen for unauthenticated users
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
+        <Header />
+        
+        <main className="container mx-auto px-4 py-8 space-y-8">
+          {/* Hero Section */}
+          <div className="text-center space-y-4 max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold text-foreground">
+              Welcome to EcoScore Wallet
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Track your sustainable spending and boost your credit score with every green purchase
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Badge variant="outline" className="text-success border-success">
+                🇲🇾 Malaysian Banks Supported
+              </Badge>
+              <Badge variant="outline" className="text-primary border-primary">
+                Sandbox Environment
+              </Badge>
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          <Card className="bg-gradient-eco text-primary-foreground shadow-eco">
+            <CardContent className="p-8 text-center">
+              <div className="space-y-4">
+                <h3 className="text-2xl font-bold">Ready to boost your credit score?</h3>
+                <p className="text-primary-foreground/90 max-w-2xl mx-auto">
+                  Start spending sustainably today and watch your EcoScore grow. 
+                  Sign up to connect your bank account or upload your transaction history.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button variant="secondary" size="lg" className="shadow-hover">
+                    Get Started
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                  <Button variant="outline" size="lg" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+                    Learn More
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+
+        {/* Footer */}
+        <footer className="bg-primary/5 py-8 mt-16">
+          <div className="container mx-auto px-4 text-center text-muted-foreground">
+            <p>&copy; 2025 EcoScore Wallet. A GLC Bank Innovation Project.</p>
+            <p className="text-sm mt-2">
+              Sandbox environment for testing purposes only.
+            </p>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  // Show main dashboard for authenticated users
   const stats = [
     {
       title: "Monthly EcoScore",
-      value: `+${userScore.ecoScore}`,
-      subtitle: `${50 - userScore.ecoScore} remaining`,
+      value: score ? `+${score.ecoScore}` : "Loading...",
+      subtitle: score ? `${score.remainingCap} remaining` : "Calculating...",
       icon: Leaf,
       color: "text-success"
     },
@@ -141,13 +178,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <Header userName="Amir Rahman" />
+      <Header />
       
       <main className="container mx-auto px-4 py-8 space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-foreground">
-            Welcome to EcoScore Wallet
+            Welcome back, {user?.email?.split('@')[0] || 'User'}!
           </h2>
           <p className="text-lg text-muted-foreground">
             Track your sustainable spending and boost your credit score with every green purchase
@@ -184,19 +221,47 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Score & Bank */}
           <div className="space-y-6">
-            <ScoreCard {...userScore} />
+            {score && (
+              <ScoreCard 
+                baseScore={score.baseScore}
+                ecoScore={score.ecoScore}
+                combinedScore={score.combinedScore}
+                scoreMonth={score.scoreMonth}
+              />
+            )}
             <BankConnection 
               isConnected={isConnected}
               bankName="GLC Bank"
-              balance={15420.50}
-              lastSync={new Date()}
+              balance={connection?.account_balance || 0}
+              lastSync={connection?.last_sync ? new Date(connection.last_sync) : undefined}
+              onConnect={handleBankConnect}
+              loading={bankLoading}
             />
           </div>
 
           {/* Middle Column - Transactions */}
           <div className="lg:col-span-2 space-y-6">
-            <TransactionFeed transactions={transactions} />
-            <MerchantsList merchants={merchants} />
+            <TransactionFeed 
+              transactions={transactions.map(t => ({
+                id: t.id,
+                date: new Date(t.date),
+                merchant: t.merchant?.name || 'Unknown Merchant',
+                amount: t.amount,
+                greenScore: t.merchant?.green_score || 0,
+                ecoScoreDelta: t.eco_score_delta,
+                category: t.category || t.merchant?.category || 'Other'
+              }))}
+              loading={transactionsLoading}
+            />
+            <MerchantsList 
+              merchants={merchants.map(m => ({
+                id: m.id,
+                name: m.name,
+                greenScore: m.green_score,
+                category: m.category || 'Other'
+              }))}
+              loading={merchantsLoading}
+            />
             
             {/* CSV Upload Section */}
             <CSVUpload 
@@ -216,7 +281,13 @@ const Index = () => {
                 Connect your bank account or upload your transaction history to get started.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="secondary" size="lg" className="shadow-hover">
+                <Button 
+                  variant="secondary" 
+                  size="lg" 
+                  className="shadow-hover"
+                  onClick={handleBankConnect}
+                  disabled={bankLoading}
+                >
                   Connect Bank Account
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>

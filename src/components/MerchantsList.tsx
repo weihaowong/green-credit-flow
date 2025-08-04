@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Store, ChevronDown, ChevronUp, Leaf } from "lucide-react";
+import { Store, ChevronDown, ChevronUp, Leaf, Loader2 } from "lucide-react";
 
 interface Merchant {
   id: string;
@@ -14,9 +14,10 @@ interface Merchant {
 
 interface MerchantsListProps {
   merchants: Merchant[];
+  loading?: boolean;
 }
 
-const MerchantsList = ({ merchants }: MerchantsListProps) => {
+const MerchantsList = ({ merchants, loading = false }: MerchantsListProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const sortedMerchants = [...merchants].sort((a, b) => b.greenScore - a.greenScore);
@@ -34,6 +35,27 @@ const MerchantsList = ({ merchants }: MerchantsListProps) => {
     if (score >= 40) return "outline";
     return "destructive";
   };
+
+  if (loading) {
+    return (
+      <Card className="shadow-card">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2">
+            <Store className="h-5 w-5 text-primary" />
+            Merchant Green Scores
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-muted-foreground" />
+              <p className="text-muted-foreground">Loading merchants...</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="shadow-card">

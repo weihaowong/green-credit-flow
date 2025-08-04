@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Landmark, CheckCircle, AlertCircle, Wallet } from "lucide-react";
+import { Landmark, CheckCircle, AlertCircle, Wallet, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface BankConnectionProps {
@@ -10,23 +10,37 @@ interface BankConnectionProps {
   bankName?: string;
   balance?: number;
   lastSync?: Date;
+  onConnect?: () => Promise<void>;
+  loading?: boolean;
 }
 
-const BankConnection = ({ isConnected, bankName, balance, lastSync }: BankConnectionProps) => {
+const BankConnection = ({ 
+  isConnected, 
+  bankName, 
+  balance, 
+  lastSync, 
+  onConnect,
+  loading = false 
+}: BankConnectionProps) => {
   const [connecting, setConnecting] = useState(false);
   const { toast } = useToast();
 
   const handleConnect = async () => {
+    if (!onConnect) return;
+    
     setConnecting(true);
     
-    // Simulate OAuth flow
-    setTimeout(() => {
-      setConnecting(false);
+    try {
+      await onConnect();
+    } catch (error) {
       toast({
-        title: "Bank Connected Successfully",
-        description: "GLC Bank account linked. Transactions are being imported.",
+        title: "Connection failed",
+        description: "Failed to connect to bank. Please try again.",
+        variant: "destructive",
       });
-    }, 2000);
+    } finally {
+      setConnecting(false);
+    }
   };
 
   const formatBalance = (amount?: number) => {
@@ -35,6 +49,17 @@ const BankConnection = ({ isConnected, bankName, balance, lastSync }: BankConnec
       style: 'currency',
       currency: 'MYR'
     }).format(amount);
+  };
+
+  const formatLastSync = (date?: Date) => {
+    if (!date) return "Never";
+    return date.toLocaleDateString('en-MY', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
@@ -70,13 +95,25 @@ const BankConnection = ({ isConnected, bankName, balance, lastSync }: BankConnec
               <div className="space-y-1">
                 <div className="text-sm text-muted-foreground">Last Sync</div>
                 <div className="text-sm">
-                  {lastSync ? lastSync.toLocaleDateString() : "Never"}
+                  {formatLastSync(lastSync)}
                 </div>
               </div>
             </div>
 
-            <Button variant="outline" size="sm" className="w-full">
-              Refresh Transactions
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                "Refresh Transactions"
+              )}
             </Button>
           </>
         ) : (
@@ -93,9 +130,16 @@ const BankConnection = ({ isConnected, bankName, balance, lastSync }: BankConnec
               size="lg" 
               className="w-full"
               onClick={handleConnect}
-              disabled={connecting}
+              disabled={connecting || loading}
             >
-              {connecting ? "Connecting..." : "Connect Bank Account"}
+              {connecting ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Connecting...
+                </>
+              ) : (
+                "Connect Bank Account"
+              )}
             </Button>
           </div>
         )}
