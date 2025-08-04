@@ -112,26 +112,20 @@ $$ LANGUAGE plpgsql;
 
 -- Insert sample merchants
 INSERT INTO merchants (name, green_score, category) VALUES
-('Solar Solutions Sdn Bhd', 95, 'Renewable Energy'),
-('Green Earth Grocery', 85, 'Organic Food'),
-('EcoTransport Malaysia', 82, 'Transportation'),
-('Sustainable Living Store', 78, 'Home & Garden'),
-('Local Fresh Market', 72, 'Groceries'),
-('Regular Supermarket', 45, 'Groceries'),
-('Fast Fashion Store', 25, 'Clothing'),
-('Eco-Friendly Restaurant', 88, 'Food & Beverage'),
-('Green Building Materials', 92, 'Construction'),
-('Sustainable Fashion', 75, 'Clothing'),
-('Organic Farm Market', 90, 'Groceries'),
-('Eco-Cleaning Services', 80, 'Services'),
-('Green Tech Solutions', 87, 'Technology'),
-('Sustainable Packaging', 85, 'Manufacturing'),
-('Eco-Tourism Malaysia', 78, 'Tourism'),
-('Green Energy Provider', 95, 'Energy'),
-('Sustainable Banking', 88, 'Financial Services'),
-('Eco-Transportation', 82, 'Transportation'),
-('Green Construction', 85, 'Construction'),
-('Sustainable Retail', 70, 'Retail');
+  ('ABLE GLOBAL BERHAD', 50, 'CONSUMER PRODUCTS & SERVICES'),
+  ('ABLEGROUP BERHAD', 50, 'INDUSTRIAL PRODUCTS & SERVICES'),
+  ('ABM FUJIYA BERHAD', 50, 'INDUSTRIAL PRODUCTS & SERVICES'),
+  ('ACME HOLDINGS BERHAD', 50, 'PROPERTY'),
+  ('ADVANCE SYNERGY BHD', 75, 'CONSUMER PRODUCTS & SERVICES'),
+  ('ADVANCECON HOLDINGS BERHAD', 75, 'CONSTRUCTION'),
+  ('ADVENTA BHD', 50, 'HEALTH CARE'),
+  ('AE MULTI HOLDINGS BHD', 50, 'INDUSTRIAL PRODUCTS & SERVICES'),
+  ('AEON CO. (M) BHD', 100, 'CONSUMER PRODUCTS & SERVICES'),
+  ('AEON CREDIT SERVICE (M) BHD', 75, 'FINANCIAL SERVICES'),
+  ('AFFIN BANK BERHAD', 75, 'FINANCIAL SERVICES'),
+  ('AHB HOLDINGS BHD', 50, 'CONSUMER PRODUCTS & SERVICES'),
+  ('AHMAD ZAKI RESOURCES BHD', 75, 'CONSTRUCTION'),
+  ('AIRASIA X BERHAD', 75, 'CONSUMER PRODUCTS & SERVICES');
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
