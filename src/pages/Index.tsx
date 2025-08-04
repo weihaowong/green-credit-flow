@@ -4,9 +4,10 @@ import ScoreCard from "@/components/ScoreCard";
 import BankConnection from "@/components/BankConnection";
 import TransactionFeed from "@/components/TransactionFeed";
 import CSVUpload from "@/components/CSVUpload";
+import MerchantsList from "@/components/MerchantsList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Badge } from "@/components/ui/badge";
 import { 
   Users, 
@@ -56,6 +57,51 @@ const Index = () => {
     }
   ]);
 
+  const [merchants] = useState([
+    {
+      id: "1",
+      name: "Solar Solutions Sdn Bhd",
+      greenScore: 95,
+      category: "Renewable Energy"
+    },
+    {
+      id: "2", 
+      name: "Green Earth Grocery",
+      greenScore: 85,
+      category: "Organic Food"
+    },
+    {
+      id: "3",
+      name: "EcoTransport Malaysia",
+      greenScore: 82,
+      category: "Transportation"
+    },
+    {
+      id: "4",
+      name: "Sustainable Living Store",
+      greenScore: 78,
+      category: "Home & Garden"
+    },
+    {
+      id: "5",
+      name: "Local Fresh Market",
+      greenScore: 72,
+      category: "Groceries"
+    },
+    {
+      id: "6",
+      name: "Regular Supermarket",
+      greenScore: 45,
+      category: "Groceries"
+    },
+    {
+      id: "7",
+      name: "Fast Fashion Store",
+      greenScore: 25,
+      category: "Clothing"
+    }
+  ]);
+
   const handleTransactionUpload = (data: any[]) => {
     // Process uploaded transactions
     const newTransactions = data.map((item, index) => ({
@@ -83,13 +129,6 @@ const Index = () => {
       subtitle: `${50 - userScore.ecoScore} remaining`,
       icon: Leaf,
       color: "text-success"
-    },
-    {
-      title: "Green Transactions",
-      value: "12",
-      subtitle: "This month",
-      icon: TrendingUp,
-      color: "text-primary"
     },
     {
       title: "Reset Date",
@@ -124,7 +163,7 @@ const Index = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {stats.map((stat, index) => (
             <Card key={index} className="shadow-card hover:shadow-hover transition-all duration-300">
               <CardContent className="p-6">
@@ -157,28 +196,13 @@ const Index = () => {
           {/* Middle Column - Transactions */}
           <div className="lg:col-span-2 space-y-6">
             <TransactionFeed transactions={transactions} />
+            <MerchantsList merchants={merchants} />
             
             {/* CSV Upload Section */}
-            <Tabs defaultValue="transactions" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="transactions">Upload Transactions</TabsTrigger>
-                <TabsTrigger value="merchants">Manage Merchants</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="transactions" className="mt-6">
-                <CSVUpload 
-                  type="transactions" 
-                  onUploadComplete={handleTransactionUpload}
-                />
-              </TabsContent>
-              
-              <TabsContent value="merchants" className="mt-6">
-                <CSVUpload 
-                  type="merchants" 
-                  onUploadComplete={handleMerchantUpload}
-                />
-              </TabsContent>
-            </Tabs>
+            <CSVUpload 
+              type="transactions" 
+              onUploadComplete={handleTransactionUpload}
+            />
           </div>
         </div>
 

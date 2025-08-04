@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Activity, TrendingUp, TrendingDown, Leaf } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Activity, TrendingUp, TrendingDown, Leaf, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -17,6 +19,8 @@ interface TransactionFeedProps {
 }
 
 const TransactionFeed = ({ transactions }: TransactionFeedProps) => {
+  const [showAll, setShowAll] = useState(false);
+  const displayedTransactions = showAll ? transactions : transactions.slice(0, 5);
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('ms-MY', {
       style: 'currency',
@@ -60,7 +64,7 @@ const TransactionFeed = ({ transactions }: TransactionFeedProps) => {
           </div>
         ) : (
           <div className="space-y-4">
-            {transactions.map((transaction, index) => (
+            {displayedTransactions.map((transaction, index) => (
               <div
                 key={transaction.id}
                 className="flex items-center justify-between p-3 rounded-lg bg-gradient-subtle hover:bg-muted/50 transition-colors animate-slide-up"
@@ -111,6 +115,28 @@ const TransactionFeed = ({ transactions }: TransactionFeedProps) => {
                 </div>
               </div>
             ))}
+            
+            {transactions.length > 5 && (
+              <div className="pt-4 border-t">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowAll(!showAll)}
+                  className="w-full flex items-center gap-2"
+                >
+                  {showAll ? (
+                    <>
+                      Show Less
+                      <ChevronUp className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      View More ({transactions.length - 5} more)
+                      <ChevronDown className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
